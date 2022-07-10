@@ -1,30 +1,29 @@
 import {Server} from 'socket.io';
+import {rooms} from "../roomsData";
 
-const rooms: Room[] = [];
-
-interface Room {
-    name: string;
-    numberOfUsers: number;
-    users: string[];
+interface roomArr {
+    name: string,
+    usersNumber: number
 }
-
 
 export default (io: Server) => {
     io.on("connection", socket => {
-        socket.on('create-room', (room: Room) => {
-            rooms.push(room);
-            socket.broadcast.emit('new-room', room);
+        socket.on('create-room', (newRoomName: string) => {
+            if (rooms.get(newRoomName)) {
+                socket.emit('room-taken', newRoomName);
+            } else {
+                rooms.set(newRoomName, []);
+                io.emit('new-room', newRoomName);
+            }
         });
 
         socket.on('get-rooms', () => {
-            socket.emit('rooms', rooms);
-        });
-
-        socket.on('user-join', (roomName: string, user: string) => {
-            rooms.filter(room => room.name === roomName)[0].users.push(user);
-
-            socket.emit('users-number-update', rooms.filter(room => room.name === roomName)[0]);
-            socket.broadcast.emit('users-number-update', rooms.filter(room => room.name === roomName)[0]);
+            const roomArr: roomArr[] = [];
+            rooms.forEach((users, roomName) => {
+                    roomArr.push({name: roomName, usersNumber: users.length})
+                }
+            );
+            socket.emit('existing-rooms', roomArr);
         });
     });
 }

@@ -1,6 +1,8 @@
-import {showMessageModal} from "./views/modal.mjs";
-import {addNewRoom, joinRoom} from "./handlers/newRoom.mjs";
+import {showInputModal, showMessageModal} from "./views/modal.mjs";
+// import {addNewRoom} from "./handlers/newRoom.mjs";
+import {joinRoom, onQuitRoom} from "./handlers/joinRoom.mjs";
 import {appendRoomElement, updateNumberOfUsersInRoom} from "./views/room.mjs";
+import {appendUserElement} from "./views/user.mjs";
 
 
 const username = sessionStorage.getItem('username');
@@ -9,7 +11,7 @@ if (!username) {
     window.location.replace('/login');
 }
 
-const socket = io('', {query: {username}});
+export const socket = io('', {query: {username}});
 
 socket.on('username-taken', () => {
     sessionStorage.removeItem('username');
@@ -22,28 +24,81 @@ socket.on('username-taken', () => {
 
 socket.emit('get-rooms');
 
-socket.on('rooms', rooms => {
+socket.on('existing-rooms', rooms => {
     rooms.forEach(room => {
         appendRoomElement(
             {
-                name: room.name, numberOfUsers: room.users.length,
+                name: room.name, numberOfUsers: room.usersNumber,
                 onJoin: () => joinRoom(room.name, socket, username)
             });
     });
 });
 
-socket.on('new-room', room => {
-    appendRoomElement(
-        {
-            name: room.name, numberOfUsers: room.users.length,
-            onJoin: () => joinRoom(room.name, socket, username)
-        });
+
+socket.on('room-taken', roomName => {
+    showMessageModal({
+        message: `Room ${roomName} is already taken!`
+    });
 });
 
-socket.on('users-number-update', room => {
-    updateNumberOfUsersInRoom({name: room.name, numberOfUsers: room.users.length});
+socket.on('users-number-update', (roomName, roomLength) => {
+    updateNumberOfUsersInRoom({name: roomName, numberOfUsers: roomLength});
 })
 
-addNewRoom(socket, username);
+
+document.getElementById('add-room-btn').addEventListener('click', () => {
+    let roomName = '';
+    showInputModal({
+        'title': 'Create Room',
+        onChange: name => roomName = name,
+        onSubmit: () => {
+            socket.emit('create-room', roomName);
+        }
+    });
+});
+
+socket.on('new-room', roomName => {
+    appendRoomElement(
+        {
+            name: roomName,
+            numberOfUsers: 0,
+            onJoin: () => joinRoom(roomName, socket, username)
+        }
+    );
+});
+
+socket.on('users-list', users => {
+    users.map(user => {
+        appendUserElement({
+            username: user.username,
+            ready: user.ready,
+            isCurrentUser: user.username === username,
+        });
+    });
+
+});
+
+
+document.getElementById('quit-room-btn').addEventListener('click', () => {
+    onQuitRoom(socket, username);
+    // document.getElementById('quit-room-btn').removeEventListener('click', onQuitRoom);
+});
+
+socket.on('user-join-room', user => {
+    appendUserElement({
+        username: user.username,
+        ready: user.ready,
+        isCurrentUser: user.username === username,
+    });
+
+});
+// socket.on('created-successfully', name => {
+//     appendRoomElement({
+//         name: name, numberOfUsers: 0,
+//         onJoin: () => joinRoom(name, socket, username)
+//     });
+//
+// });
+// addNewRoom(socket, username);
 
 // socket

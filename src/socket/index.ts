@@ -1,6 +1,7 @@
 import {Server} from 'socket.io';
 import * as config from './config';
 import rooms from './rooms';
+import game from './game';
 
 const users = new Set<string>();
 
@@ -18,4 +19,5 @@ export default (io: Server) => {
         });
     });
     rooms(io);
+    game(io);
 };
