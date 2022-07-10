@@ -1,6 +1,8 @@
 import {socket} from "../game.mjs";
 import {changeReadyStatus, setProgress} from "../views/user.mjs";
-import {startGame} from "./startGame.mjs";
+import {startGame, timer} from "./startGame.mjs";
+import {showResultsModal} from "../views/modal.mjs";
+import {onGameEnd} from "./afterGame.mjs";
 
 const username = sessionStorage.getItem('username');
 
@@ -17,20 +19,23 @@ ReadyButton.addEventListener('click', () => {
     }
 });
 
-
 socket.on('user-ready', username => {
     changeReadyStatus({username, ready: true});
-})
+});
 
 socket.on('user-not-ready', username => {
     changeReadyStatus({username, ready: false});
-})
+});
 
-
-socket.on('all-users-ready', (timerValue, textId) => {
-    startGame(timerValue, textId);
+socket.on('all-users-ready', (timerValue, gameTimer, textId) => {
+    startGame(timerValue, gameTimer, textId);
 });
 
 socket.on('user-progress', (username, progress) => {
     setProgress({username, progress});
+});
+
+socket.on('all-users-finished', winners =>{
+    clearTimeout(timer);
+    showResultsModal({usersSortedArray: winners, onClose: onGameEnd});
 });

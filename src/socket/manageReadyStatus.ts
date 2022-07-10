@@ -1,7 +1,7 @@
 import {Server} from "socket.io";
 import {rooms, User, Room} from "../roomsData";
 import {getCurrentRoom} from "./managePlayersInRooms";
-import {SECONDS_TIMER_BEFORE_START_GAME} from "./config";
+import {SECONDS_TIMER_BEFORE_START_GAME, SECONDS_FOR_GAME} from "./config";
 import {texts} from "../data";
 
 
@@ -10,7 +10,7 @@ export default (io: Server) => {
         socket.on('user-ready', (username: string) => {
             const currentRoom = getCurrentRoom(socket);
             const room = rooms.get(currentRoom) as Room;
-            const user = room.users.find(user => user.username === username) as User;
+            const user: User | undefined = room.users.find(user => user.username === username);
             if (user) {
                 user.ready = true;
                 socket.to(currentRoom).emit('user-ready', username);
@@ -35,8 +35,8 @@ export default (io: Server) => {
 
 
 export const onGameStart = (io, currentRoom, room) => {
-    const textId: number = Math.floor(Math.random() * texts.length)
-    io.to(currentRoom).emit('all-users-ready', SECONDS_TIMER_BEFORE_START_GAME, textId);
+    const textId: number = Math.floor(Math.random() * texts.length);
+    io.to(currentRoom).emit('all-users-ready', SECONDS_TIMER_BEFORE_START_GAME, SECONDS_FOR_GAME, textId);
     room.started = true;
     io.emit('delete-room', currentRoom);
 }

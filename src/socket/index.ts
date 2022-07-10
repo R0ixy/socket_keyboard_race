@@ -1,5 +1,4 @@
 import {Server} from 'socket.io';
-import * as config from './config';
 import manageRooms from './manageRooms';
 import managePlayersInRooms from './managePlayersInRooms';
 import manageReadyStatus from "./manageReadyStatus";
@@ -24,4 +23,4 @@ export default (io: Server) => {
     managePlayersInRooms(io);
     manageReadyStatus(io);
     manageGame(io);
-};
+}

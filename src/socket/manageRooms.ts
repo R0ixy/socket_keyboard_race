@@ -21,7 +21,7 @@ export default (io: Server) => {
             const roomArr: roomArr[] = [];
             rooms.forEach((room, roomName) => {
                     if (!room.started && !room.full) {
-                        roomArr.push({name: roomName, usersNumber: room.users.length})
+                        roomArr.push({name: roomName, usersNumber: room.users.length});
                     }
                 }
             );

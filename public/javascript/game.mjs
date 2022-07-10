@@ -1,5 +1,4 @@
 import {showInputModal, showMessageModal} from "./views/modal.mjs";
-// import {addNewRoom} from "./handlers/newRoom.mjs";
 import {joinRoom, onQuitRoom} from "./handlers/joinRoom.mjs";
 import {appendRoomElement, removeRoomElement, updateNumberOfUsersInRoom} from "./views/room.mjs";
 import {appendUserElement, removeUserElement} from "./views/user.mjs";
@@ -19,7 +18,7 @@ socket.on('username-taken', () => {
         message: `Username ${username} is already taken!`,
         onClose: () => window.location.replace('/login')
     });
-})
+});
 
 
 socket.emit('get-rooms');
@@ -43,7 +42,7 @@ socket.on('room-taken', roomName => {
 
 socket.on('users-number-update', (roomName, roomLength) => {
     updateNumberOfUsersInRoom({name: roomName, numberOfUsers: roomLength});
-})
+});
 
 
 document.getElementById('add-room-btn').addEventListener('click', () => {
@@ -96,12 +95,12 @@ socket.on('user-join-room', user => {
     });
 });
 
-socket.on('room-full', roomName=>{
+socket.on('room-full', roomName => {
     showMessageModal({
         message: `Room ${roomName} is full!`
     });
 });
 
-socket.on('delete-room', roomName=>{
+socket.on('delete-room', roomName => {
     removeRoomElement(roomName);
 });

@@ -1,4 +1,4 @@
-import { addClass } from '../helpers/domHelper.mjs';
+import { addClass, removeClass } from '../helpers/domHelper.mjs';
 import { createElement } from '../helpers/domHelper.mjs';
 
 const appendUserElement = ({ username, ready, isCurrentUser }) => {
@@ -55,6 +55,17 @@ const changeReadyStatus = ({ username, ready }) => {
 	readyStatusElement.dataset.ready = Boolean(ready);
 };
 
+
+const makeAllUsersUnready = () => {
+	const ready = false;
+	const readyStatusElements = document.querySelectorAll(`.ready-status`);
+	for (let status of readyStatusElements) {
+		status.innerHTML = getReadySign(ready);
+		status.dataset.ready = Boolean(ready);
+	}
+}
+
+
 const setProgress = ({ username, progress }) => {
 	const progressElement = document.querySelector(`.user-progress[data-username='${username}']`);
 
@@ -66,8 +77,16 @@ const setProgress = ({ username, progress }) => {
 	}
 };
 
+const clearProgress = () => {
+	const progressElements = document.querySelectorAll('.user-progress');
+	for (let progress of progressElements) {
+		progress.style.width = `0%`;
+		removeClass(progress, 'finished');
+	}
+}
+
 const removeUserElement = username => document.querySelector(`.user[data-username='${username}']`)?.remove();
 
 const getReadySign = ready => (ready ? '🟢' : '🔴');
 
-export { appendUserElement, changeReadyStatus, setProgress, removeUserElement };
+export { appendUserElement, changeReadyStatus, setProgress, removeUserElement, makeAllUsersUnready, clearProgress };
