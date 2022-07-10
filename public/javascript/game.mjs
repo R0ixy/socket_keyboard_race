@@ -57,11 +57,11 @@ document.getElementById('add-room-btn').addEventListener('click', () => {
     });
 });
 
-socket.on('new-room', roomName => {
+socket.on('add-room', (roomName, usersNumber) => {
     appendRoomElement(
         {
             name: roomName,
-            numberOfUsers: 0,
+            numberOfUsers: usersNumber,
             onJoin: () => joinRoom(roomName, socket, username)
         }
     );

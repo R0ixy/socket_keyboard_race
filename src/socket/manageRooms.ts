@@ -12,15 +12,17 @@ export default (io: Server) => {
             if (rooms.get(newRoomName)) {
                 socket.emit('room-taken', newRoomName);
             } else {
-                rooms.set(newRoomName, []);
-                io.emit('new-room', newRoomName);
+                rooms.set(newRoomName, {started: false, full: false, users: []});
+                io.emit('add-room', newRoomName, 0);
             }
         });
 
         socket.on('get-rooms', () => {
             const roomArr: roomArr[] = [];
-            rooms.forEach((users, roomName) => {
-                    roomArr.push({name: roomName, usersNumber: users.length})
+            rooms.forEach((room, roomName) => {
+                    if (!room.started && !room.full) {
+                        roomArr.push({name: roomName, usersNumber: room.users.length})
+                    }
                 }
             );
             socket.emit('existing-rooms', roomArr);

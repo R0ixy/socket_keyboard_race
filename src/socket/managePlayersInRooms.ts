@@ -1,8 +1,7 @@
 import {Server} from "socket.io";
-import {rooms, User} from "../roomsData";
+import {rooms, User, Room} from "../roomsData";
 import * as config from './config';
-import {texts} from "../data";
-import {SECONDS_TIMER_BEFORE_START_GAME} from "./config";
+import {onGameStart} from "./manageReadyStatus";
 
 export const getCurrentRoom = socket => [...socket.rooms.keys()].find(roomId => rooms.has(roomId)) as string;
 
@@ -10,15 +9,21 @@ export const getCurrentRoom = socket => [...socket.rooms.keys()].find(roomId => 
 export default (io: Server) => {
     io.on('connection', socket => {
         socket.on('user-join', (roomName: string, username: string) => {
-            if (rooms.get(roomName)?.length as number + 1 <= config.MAXIMUM_USERS_FOR_ONE_ROOM) {
+            const room = rooms.get(roomName) as Room;
+            if (room.users.length as number + 1 <= config.MAXIMUM_USERS_FOR_ONE_ROOM) {
                 socket.join(roomName);
 
-                rooms.get(roomName)?.push({username: username, ready: false});
-                const users = rooms.get(roomName) as User[];
+                rooms.get(roomName)?.users.push({username: username, ready: false});
+                const users = rooms.get(roomName)?.users as User[];
 
                 socket.broadcast.emit('users-number-update', roomName, users?.length);
                 socket.emit('users-list', users);
                 socket.to(roomName).emit('user-join-room', {username: username, ready: false});
+
+                if (room.users.length === config.MAXIMUM_USERS_FOR_ONE_ROOM){
+                    room.full = true;
+                    io.emit('delete-room', roomName);
+                }
             } else {
                 socket.emit('room-full', roomName);
             }
@@ -33,22 +38,26 @@ export default (io: Server) => {
 const userQuitRoom = (io, socket, username: string) => {
     const currentRoom = getCurrentRoom(socket);
     if (currentRoom) {
-        const users = rooms.get(currentRoom) as User[];
+        const room = rooms.get(currentRoom) as Room;
+        const users = room.users as User[];
 
-        users?.splice(rooms.get(currentRoom)?.findIndex(user => user.username === username) as number, 1);
-        if (rooms.get(currentRoom)?.length === 0) {
+        users?.splice(rooms.get(currentRoom)?.users.findIndex(user => user.username === username) as number, 1);
+        if (rooms.get(currentRoom)?.users.length === 0) {
             rooms.delete(currentRoom);
             io.emit('delete-room', currentRoom);
         } else {
-            io.emit('users-number-update', currentRoom, rooms.get(currentRoom)?.length);
+            io.emit('users-number-update', currentRoom, rooms.get(currentRoom)?.users.length);
             socket.to(currentRoom).emit('user-quit-room-event', username);
         }
 
-        if (users.every(user => user.ready)) {
-            const textId: number = Math.floor(Math.random() * texts.length)
-            io.to(currentRoom).emit('all-users-ready', SECONDS_TIMER_BEFORE_START_GAME, textId);
+        if (users.every(user => user.ready) && users.length >= 2) {
+            onGameStart(io, currentRoom, room);
         }
 
+        if (room.full && !room.started){
+            room.full = false;
+            io.emit('add-room', currentRoom, room.users.length);
+        }
         socket.leave(currentRoom);
     }
 }

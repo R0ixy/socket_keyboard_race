@@ -3,5 +3,11 @@ export interface User {
     ready: boolean;
 }
 
-export const rooms: Map<string, User[] > = new Map();
+export interface Room {
+    started: boolean;
+    full: boolean
+    users: User[];
+}
+
+export const rooms: Map<string, Room> = new Map();
 
