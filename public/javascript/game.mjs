@@ -1,8 +1,8 @@
 import {showInputModal, showMessageModal} from "./views/modal.mjs";
 // import {addNewRoom} from "./handlers/newRoom.mjs";
 import {joinRoom, onQuitRoom} from "./handlers/joinRoom.mjs";
-import {appendRoomElement, updateNumberOfUsersInRoom} from "./views/room.mjs";
-import {appendUserElement} from "./views/user.mjs";
+import {appendRoomElement, removeRoomElement, updateNumberOfUsersInRoom} from "./views/room.mjs";
+import {appendUserElement, removeUserElement} from "./views/user.mjs";
 
 
 const username = sessionStorage.getItem('username');
@@ -68,6 +68,8 @@ socket.on('new-room', roomName => {
 });
 
 socket.on('users-list', users => {
+    document.getElementById('rooms-page').classList.add('display-none');
+    document.getElementById('game-page').classList.remove('display-none');
     users.map(user => {
         appendUserElement({
             username: user.username,
@@ -75,13 +77,15 @@ socket.on('users-list', users => {
             isCurrentUser: user.username === username,
         });
     });
-
 });
 
 
 document.getElementById('quit-room-btn').addEventListener('click', () => {
     onQuitRoom(socket, username);
-    // document.getElementById('quit-room-btn').removeEventListener('click', onQuitRoom);
+});
+
+socket.on('user-quit-room-event', username => {
+    removeUserElement(username);
 });
 
 socket.on('user-join-room', user => {
@@ -90,15 +94,14 @@ socket.on('user-join-room', user => {
         ready: user.ready,
         isCurrentUser: user.username === username,
     });
-
 });
-// socket.on('created-successfully', name => {
-//     appendRoomElement({
-//         name: name, numberOfUsers: 0,
-//         onJoin: () => joinRoom(name, socket, username)
-//     });
-//
-// });
-// addNewRoom(socket, username);
 
-// socket
+socket.on('room-full', roomName=>{
+    showMessageModal({
+        message: `Room ${roomName} is full!`
+    });
+});
+
+socket.on('delete-room', roomName=>{
+    removeRoomElement(roomName);
+});

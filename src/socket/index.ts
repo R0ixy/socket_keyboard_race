@@ -1,7 +1,9 @@
 import {Server} from 'socket.io';
 import * as config from './config';
-import rooms from './rooms';
-import game from './game';
+import manageRooms from './manageRooms';
+import managePlayersInRooms from './managePlayersInRooms';
+import manageReadyStatus from "./manageReadyStatus";
+import manageGame from "./manageGame";
 
 const users = new Set<string>();
 
@@ -18,6 +20,8 @@ export default (io: Server) => {
             users.delete(username);
         });
     });
-    rooms(io);
-    game(io);
+    manageRooms(io);
+    managePlayersInRooms(io);
+    manageReadyStatus(io);
+    manageGame(io);
 };
