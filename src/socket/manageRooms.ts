@@ -10,10 +10,11 @@ export default (io: Server) => {
     io.on("connection", socket => {
         socket.on('create-room', (newRoomName: string) => {
             if (rooms.get(newRoomName)) {
-                socket.emit('room-taken', newRoomName);
+                socket.emit('room-name-taken', newRoomName);
             } else {
                 rooms.set(newRoomName, {started: false, full: false, users: []});
-                io.emit('add-room', newRoomName, 0);
+                socket.emit('room-created', newRoomName);
+                socket.broadcast.emit('add-room', newRoomName, 0);
             }
         });
 

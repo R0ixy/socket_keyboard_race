@@ -52,6 +52,7 @@ const showText = () => {
 const onTimeOut = () => {
     clearTimeout(timer);
     document.removeEventListener('keydown', onKeyDown);
+
     showMessageModal({message: 'Time is up!', onClose: onGameEnd});
 }
 

@@ -2,6 +2,7 @@ import {showInputModal, showMessageModal} from "./views/modal.mjs";
 import {joinRoom, onQuitRoom} from "./handlers/joinRoom.mjs";
 import {appendRoomElement, removeRoomElement, updateNumberOfUsersInRoom} from "./views/room.mjs";
 import {appendUserElement, removeUserElement} from "./views/user.mjs";
+import {addClass, removeClass} from "./helpers/domHelper.mjs";
 
 
 const username = sessionStorage.getItem('username');
@@ -34,9 +35,9 @@ socket.on('existing-rooms', rooms => {
 });
 
 
-socket.on('room-taken', roomName => {
+socket.on('room-name-taken', roomName => {
     showMessageModal({
-        message: `Room ${roomName} is already taken!`
+        message: `Room name "${roomName}" is already taken!`
     });
 });
 
@@ -56,6 +57,10 @@ document.getElementById('add-room-btn').addEventListener('click', () => {
     });
 });
 
+socket.on('room-created', roomName => {
+    joinRoom(roomName, socket, username)
+});
+
 socket.on('add-room', (roomName, usersNumber) => {
     appendRoomElement(
         {
@@ -66,9 +71,11 @@ socket.on('add-room', (roomName, usersNumber) => {
     );
 });
 
-socket.on('users-list', users => {
-    document.getElementById('rooms-page').classList.add('display-none');
-    document.getElementById('game-page').classList.remove('display-none');
+socket.on('show-room', (users, roomName) => {
+    addClass(document.getElementById('rooms-page'), 'display-none');
+    removeClass(document.getElementById('game-page'), 'display-none');
+    document.getElementById('room-name').innerText = roomName;
+    document.getElementById('ready-btn').innerText = 'READY';
     users.map(user => {
         appendUserElement({
             username: user.username,
