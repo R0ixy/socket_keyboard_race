@@ -1,6 +1,6 @@
 import {socket} from "../game.mjs";
 import {changeReadyStatus, setProgress} from "../views/user.mjs";
-import {startGame, timer} from "./startGame.mjs";
+import {onKeyDown, startGame, timer} from "./gameProcess.mjs";
 import {showResultsModal} from "../views/modal.mjs";
 import {onGameEnd} from "./afterGame.mjs";
 
@@ -35,7 +35,8 @@ socket.on('user-progress', (username, progress) => {
     setProgress({username, progress});
 });
 
-socket.on('all-users-finished', winners =>{
+socket.on('game-over', winners =>{
     clearTimeout(timer);
+    document.removeEventListener('keydown', onKeyDown);
     showResultsModal({usersSortedArray: winners, onClose: onGameEnd});
 });

@@ -1,7 +1,5 @@
 import {setProgress} from "../views/user.mjs";
 import {socket} from "../game.mjs";
-import {showMessageModal} from "../views/modal.mjs";
-import {onGameEnd} from "./afterGame.mjs";
 import {addClass, removeClass} from "../helpers/domHelper.mjs";
 
 let text;
@@ -12,7 +10,6 @@ const timerElement = document.getElementById('timer');
 
 export const startGame = (timerValue, gameTimer, textId) => {
     gameTimerValue = gameTimer;
-    timerElement.classList.remove('display-none');
     removeClass(timerElement, 'display-none');
     addClass(document.getElementById('ready-btn'), 'display-none');
     addClass(document.getElementById('quit-room-btn'), 'display-none');
@@ -46,14 +43,13 @@ const showText = () => {
     removeClass(document.getElementById('text-container'), 'display-none');
     document.addEventListener('keydown', onKeyDown);
     removeClass(document.getElementById('game-timer'), 'display-none');
-    countdown(gameTimerValue, onTimeOut, gameTimerElement);
+    countdown(gameTimerValue, onTimeUp, gameTimerElement);
 }
 
-const onTimeOut = () => {
+const onTimeUp = () => {
     clearTimeout(timer);
     document.removeEventListener('keydown', onKeyDown);
-
-    showMessageModal({message: 'Time is up!', onClose: onGameEnd});
+    socket.emit('time-is-up');
 }
 
 
@@ -64,7 +60,7 @@ const getText = async (textId) => {
     }
 }
 
-const onKeyDown = ev => {
+export const onKeyDown = ev => {
     if (text[letterIndex] === ev.key) {
         document.getElementById('text-container').innerHTML =
             '<span style="background-color: lightgreen;">' + text.slice(0, letterIndex + 1) + '</span >'

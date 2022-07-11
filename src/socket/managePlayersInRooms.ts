@@ -1,7 +1,7 @@
 import {Server} from "socket.io";
 import {rooms, User, Room} from "../roomsData";
 import {MAXIMUM_USERS_FOR_ONE_ROOM} from './config';
-import {winners} from "./manageGame";
+import {gameOver, winners} from "./manageGame";
 import {onGameStart} from "./manageReadyStatus";
 
 export const getCurrentRoom = socket => [...socket.rooms.keys()].find(roomId => rooms.has(roomId)) as string;
@@ -14,11 +14,11 @@ export default (io: Server) => {
             if (room?.users.length as number + 1 <= MAXIMUM_USERS_FOR_ONE_ROOM) {
                 socket.join(roomName);
 
-                rooms.get(roomName)?.users.push({username: username, ready: false});
+                rooms.get(roomName)?.users.push({username: username, ready: false, progress: 0});
                 const users = rooms.get(roomName)?.users as User[];
 
                 socket.broadcast.emit('users-number-update', roomName, users?.length);
-                socket.emit('users-list', users);
+                socket.emit('show-room', users, roomName);
                 socket.to(roomName).emit('user-join-room', {username: username, ready: false});
 
                 if (room.users.length === MAXIMUM_USERS_FOR_ONE_ROOM){
@@ -64,8 +64,8 @@ const userQuitRoom = (io, socket, username: string) => {
         if (room.started) {
             winners.delete(socket.handshake.query.username as string);
             if (winners.size === rooms.get(currentRoom)?.users.length) {
-                io.to(currentRoom).emit('all-users-finished', [...winners]);
-                winners.clear();
+                io.to(currentRoom).emit('game-over', [...winners]);
+                gameOver(io, currentRoom, room);
             }
         }
 
