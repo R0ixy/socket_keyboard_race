@@ -68,14 +68,15 @@ export const onKeyDown = ev => {
             + text.slice(letterIndex + 2);
         letterIndex++;
         const progress = letterIndex * 100 / text.length;
-        changeProgressBar(progress)
+        const lettersLeft = text.length - letterIndex;
+        changeProgressBar(progress, lettersLeft)
     }
 }
 
 
 const username = sessionStorage.getItem('username');
 
-const changeProgressBar = progress => {
+const changeProgressBar = (progress, lettersLeft) => {
     setProgress({username, progress});
-    socket.emit('change-user-progress', username, progress);
+    socket.emit('change-user-progress', username, progress, lettersLeft);
 }

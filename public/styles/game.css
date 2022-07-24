@@ -72,3 +72,33 @@
 .finished {
   background-color:greenyellow !important;
 }
+
+#comments-container{
+  justify-content: center;
+  gap: 20px;
+}
+#comments {
+  position: relative;
+  max-width: 300px;
+  padding: 30px;
+  border-radius: 10px 10px 10px 0;
+  background: var(--main-button-background-color);
+  color: #333333;
+  float: right;
+}
+#comments::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 100%;
+  display: block;
+  width: 30px;
+  height: 30px;
+  background: radial-gradient(60px at top left, transparent 49%, var(--main-button-background-color) 51%) no-repeat right bottom;
+}
+.comments-icon{
+  height: 100px;
+  width: 100px;
+  float: left;
+  align-self: end;
+}

@@ -1,8 +1,8 @@
 import {socket} from "../game.mjs";
 import {changeReadyStatus, setProgress} from "../views/user.mjs";
 import {onKeyDown, startGame, timer} from "./gameProcess.mjs";
-import {showResultsModal} from "../views/modal.mjs";
 import {onGameEnd} from "./afterGame.mjs";
+import {newBotMessage, showBot} from "./comments-bot.mjs";
 
 const username = sessionStorage.getItem('username');
 
@@ -29,6 +29,7 @@ socket.on('user-not-ready', username => {
 
 socket.on('all-users-ready', (timerValue, gameTimer, textId) => {
     startGame(timerValue, gameTimer, textId);
+    showBot();
 });
 
 socket.on('user-progress', (username, progress) => {
@@ -38,5 +39,10 @@ socket.on('user-progress', (username, progress) => {
 socket.on('game-over', winners =>{
     clearTimeout(timer);
     document.removeEventListener('keydown', onKeyDown);
-    showResultsModal({usersSortedArray: winners, onClose: onGameEnd});
+    newBotMessage(winners);
+    onGameEnd();
+});
+
+socket.on('new-message', message => {
+    newBotMessage(message);
 });
