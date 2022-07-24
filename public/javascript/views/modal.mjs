@@ -25,45 +25,6 @@ const showInputModal = ({ title, onChange = () => {}, onSubmit = () => {} }) => 
 	inputElement.addEventListener('change', e => onChange(e.target.value));
 };
 
-const showResultsModal = ({ usersSortedArray, onClose = () => {} }) => {
-	const rootElement = document.querySelector('#root');
-
-	const modalElement = createModalElement('Results: ');
-
-	const resultElements = usersSortedArray.map((username, index) => {
-		const place = ++index;
-
-		return createElement({
-			tagName: 'div',
-			className: 'user-result',
-			attributes: { 'data-username': username, 'data-place': place },
-			innerElements: [`${place}) ${username}`],
-		});
-	});
-
-	const bodyWrapper = createElement({
-		tagName: 'div',
-		className: 'body-wrapper',
-		innerElements: resultElements,
-	});
-
-	const closeButton = createElement({
-		tagName: 'button',
-		className: 'submit-btn',
-		attributes: { id: 'quit-results-btn' },
-		innerElements: ['Close'],
-	});
-
-	modalElement.append(bodyWrapper);
-	modalElement.append(getFooter([closeButton]));
-	rootElement.append(modalElement);
-
-	closeButton.addEventListener('click', () => {
-		modalElement.remove();
-		onClose();
-	});
-};
-
 const showMessageModal = ({ message, onClose = () => {} }) => {
 	const rootElement = document.querySelector('#root');
 
@@ -108,4 +69,4 @@ const getFooter = children => {
 	});
 };
 
-export { showInputModal, showResultsModal, showMessageModal };
+export { showInputModal, showMessageModal };
