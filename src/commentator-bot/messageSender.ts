@@ -4,7 +4,6 @@ import {Server} from "socket.io";
 import {MessageEmitter} from "./messageEmitter";
 import {ChooseService} from "./serviceFactory";
 
-// import {LoggerProxy} from "./loggerProxy";
 
 export interface AbstractSender {
     startRace(): void;
@@ -23,6 +22,7 @@ export class MessageSender implements AbstractSender { // Facade pattern
     private messageEmitter: MessageEmitter;
 
     private interval?: NodeJS.Timer;
+    private randomMessageInterval?: NodeJS.Timer;
     private isBeforeFinishSend: boolean;
 
     constructor(players: User[], io: Server, currentRoom: string) {
@@ -44,7 +44,8 @@ export class MessageSender implements AbstractSender { // Facade pattern
         setTimeout(() => {
             this.interval = setInterval(() => {
                 this.messageEmitter.sendMessage(this.messageService.progressMessage());
-            }, 15000);
+            }, 30000);
+            this.randomMessage();
         }, 10000);
 
     }
@@ -62,6 +63,13 @@ export class MessageSender implements AbstractSender { // Facade pattern
 
     public gameOver(winners: string[]): void {
         clearInterval(this.interval as NodeJS.Timer);
+        clearInterval(this.randomMessageInterval as NodeJS.Timer);
         this.messageEmitter.sendGameOver(this.messageService.winnersMessage(winners));
+    }
+
+    private randomMessage(): void {
+        this.randomMessageInterval = setInterval(() => {
+            this.messageEmitter.sendMessage(this.messageService.randomCommentMessage());
+        }, 12000);
     }
 }
