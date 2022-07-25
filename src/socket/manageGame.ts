@@ -21,7 +21,7 @@ export default (io: Server) => {
 
             if (progress === 100) {
                 winners.add(username);
-                room.messageSender?.finishRace(username, winners.size);
+                room.messageSender?.userFinishesRace(username, winners.size);
                 if (winners.size === room?.users.length) {
                     gameOver(io, currentRoom, room, [...winners]);
                 }

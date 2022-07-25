@@ -10,7 +10,7 @@ interface AbstractService {
 
     finishMessage(username: string, number: number): string;
 
-    winnersMessage(winners: string[]): string;
+    winnersMessage(winners: string[], timeArr: number[]): string;
 
     randomCommentMessage(): string;
 }
@@ -58,8 +58,9 @@ export abstract class MessageService implements AbstractService {
         }
     }
 
-    public winnersMessage(winners: string[]): string {
-        return `Заезд завершается, поздравляем победителей!\n ${winners.map((winner, index) => `${index + 1}е место - ${winner}`).join('\n')}`;
+    public winnersMessage(winners: string[], timeArr: number[]): string {
+        return `Заезд завершается, поздравляем победителей!\n
+         ${winners.map((winner, index) => `${index + 1}е место - ${winner} [${timeArr[index]/1000}с]`).join('\n')}`;
     }
 
     public randomCommentMessage(): string {

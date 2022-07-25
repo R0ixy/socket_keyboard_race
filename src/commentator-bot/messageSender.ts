@@ -3,6 +3,7 @@ import {User} from "../roomsData";
 import {Server} from "socket.io";
 import {MessageEmitter} from "./messageEmitter";
 import {ChooseService} from "./serviceFactory";
+import {SECONDS_TIMER_BEFORE_START_GAME} from "../socket/config";
 
 
 export interface AbstractSender {
@@ -10,7 +11,7 @@ export interface AbstractSender {
 
     beforeFinish(): void;
 
-    finishRace(winnerName: string, winnersCount: number): void;
+    userFinishesRace(winnerName: string, winnersCount: number): void;
 
     gameOver(winnersNames: string[]): void;
 }
@@ -24,11 +25,15 @@ export class MessageSender implements AbstractSender { // Facade pattern
     private interval?: NodeJS.Timer;
     private randomMessageInterval?: NodeJS.Timer;
     private isBeforeFinishSend: boolean;
+    private timer: number;
+    private readonly timeArr: number[]
 
     constructor(players: User[], io: Server, currentRoom: string) {
         this.messageEmitter = new MessageEmitter(io, currentRoom);
         this.messageService = ChooseService.factoryMethod(players);
         this.isBeforeFinishSend = false;
+        this.timer = 0
+        this.timeArr = []
     }
 
 
@@ -42,11 +47,12 @@ export class MessageSender implements AbstractSender { // Facade pattern
 
 
         setTimeout(() => {
+            this.timer = new Date().getTime();
             this.interval = setInterval(() => {
                 this.messageEmitter.sendMessage(this.messageService.progressMessage());
             }, 30000);
             this.randomMessage();
-        }, 10000);
+        }, SECONDS_TIMER_BEFORE_START_GAME);
 
     }
 
@@ -57,14 +63,15 @@ export class MessageSender implements AbstractSender { // Facade pattern
         }
     }
 
-    public finishRace(username: string, number: number): void {
+    public userFinishesRace(username: string, number: number): void {
+        this.timeArr.push(new Date().getTime() - this.timer);
         this.messageEmitter.sendMessage(this.messageService.finishMessage(username, number));
     }
 
     public gameOver(winners: string[]): void {
         clearInterval(this.interval as NodeJS.Timer);
         clearInterval(this.randomMessageInterval as NodeJS.Timer);
-        this.messageEmitter.sendGameOver(this.messageService.winnersMessage(winners));
+        this.messageEmitter.sendGameOver(this.messageService.winnersMessage(winners, this.timeArr));
     }
 
     private randomMessage(): void {
