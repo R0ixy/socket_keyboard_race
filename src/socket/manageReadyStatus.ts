@@ -3,6 +3,8 @@ import {rooms, User, Room} from "../roomsData";
 import {getCurrentRoom} from "./managePlayersInRooms";
 import {SECONDS_TIMER_BEFORE_START_GAME, SECONDS_FOR_GAME} from "./config";
 import {texts} from "../data";
+import {MessageSender} from "../commentator-bot/messageSender";
+import {LoggerProxy} from "../commentator-bot/loggerProxy";
 
 
 export default (io: Server) => {
@@ -39,5 +41,7 @@ export const onGameStart = (io, currentRoom, room) => {
     io.to(currentRoom).emit('all-users-ready', SECONDS_TIMER_BEFORE_START_GAME, SECONDS_FOR_GAME, textId);
     room.started = true;
     io.emit('delete-room', currentRoom);
+    room.messageSender = new LoggerProxy(new MessageSender(rooms.get(currentRoom)?.users as User[], io, currentRoom));
+    room.messageSender.startRace();
 }
 

@@ -64,8 +64,7 @@ const userQuitRoom = (io, socket, username: string) => {
         if (room.started) {
             winners.delete(socket.handshake.query.username as string);
             if (winners.size === rooms.get(currentRoom)?.users.length) {
-                io.to(currentRoom).emit('game-over', [...winners]);
-                gameOver(io, currentRoom, room);
+                gameOver(io, currentRoom, room, [...winners]);
             }
         }
 
